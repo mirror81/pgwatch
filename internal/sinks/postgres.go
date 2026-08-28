@@ -13,9 +13,9 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 
-	"github.com/cybertec-postgresql/pgwatch/v5/internal/db"
-	"github.com/cybertec-postgresql/pgwatch/v5/internal/log"
-	"github.com/cybertec-postgresql/pgwatch/v5/internal/metrics"
+	"github.com/cybertec-postgresql/pgwatch/v6/internal/db"
+	"github.com/cybertec-postgresql/pgwatch/v6/internal/log"
+	"github.com/cybertec-postgresql/pgwatch/v6/internal/metrics"
 	migrator "github.com/cybertec-postgresql/pgx-migrator"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -382,8 +382,8 @@ func (pgw *PostgresWriter) flush(msgs []metrics.MeasurementEnvelope) {
 	})
 
 	for _, msg := range msgs {
-		for _, dataRow := range msg.Data {
-			epochTime := time.Unix(0, metrics.Measurement(dataRow).GetEpoch())
+		if len(msg.Data) > 0 {
+			epochTime := time.Unix(0, msg.Data.GetEpoch())
 			bounds, ok := pgPartBounds[msg.MetricName]
 			if !ok || (ok && epochTime.Before(bounds.StartTime)) {
 				bounds.StartTime = epochTime
@@ -471,7 +471,16 @@ func (pgw *PostgresWriter) EnsureMetricTimePartsExist(metricPartBounds map[strin
 			return fmt.Errorf("zero StartTime/EndTime in partitioning request: [%s:%v]", metric, pb)
 		}
 		partInfo, ok := pgw.partitionMapMetric[metric]
-		if !ok || pb.EndTime.After(partInfo.EndTime) || pb.EndTime.Equal(partInfo.EndTime) || pgw.forceRecreatePartitions {
+		if !ok || pb.StartTime.Before(partInfo.StartTime) || pgw.forceRecreatePartitions {
+			if rows, err = pgw.sinkDb.Query(pgw.ctx, sqlEnsure, metric, pb.StartTime, pgw.opts.PartitionInterval); err != nil {
+				return err
+			}
+			if partInfo, err = pgx.CollectOneRow(rows, pgx.RowToStructByPos[ExistingPartitionInfo]); err != nil {
+				return err
+			}
+			pgw.partitionMapMetric[metric] = partInfo
+		}
+		if pb.EndTime.After(partInfo.EndTime) || pb.EndTime.Equal(partInfo.EndTime) || pgw.forceRecreatePartitions {
 			if rows, err = pgw.sinkDb.Query(pgw.ctx, sqlEnsure, metric, pb.EndTime, pgw.opts.PartitionInterval); err != nil {
 				return err
 			}
@@ -572,10 +581,8 @@ func (pgw *PostgresWriter) NeedsMigration() (bool, error) {
 	return m.NeedUpgrade(pgw.ctx, pgw.sinkDb)
 }
 
-// MigrationsCount is the total number of migrations in admin.migration table
-const MigrationsCount = 3
-
 // migrations holds function returning all upgrade migrations needed
+
 var migrations func() migrator.Option = func() migrator.Option {
 	return migrator.Migrations(
 		&migrator.Migration{
@@ -718,6 +725,22 @@ var migrations func() migrator.Option = func() migrator.Option {
 			},
 		},
 
+		&migrator.Migration{
+			Name: "01474 Change drop_all_metric_tables to procedure",
+			Func: func(ctx context.Context, tx pgx.Tx) error {
+				_, err := tx.Exec(ctx, sqlMetricAdminFunctions)
+				return err
+			},
+		},
+
+		&migrator.Migration{
+			Name: "01529 Fix ensure_partition_metric_time partitioning strategy",
+			Func: func(ctx context.Context, tx pgx.Tx) error {
+				_, err := tx.Exec(ctx, sqlMetricEnsurePartitionPostgres)
+				return err
+			},
+		},
+
 		// adding new migration here, update "admin"."migration" in "admin_schema.sql"!
 
 		// &migrator.Migration{
@@ -727,4 +750,16 @@ var migrations func() migrator.Option = func() migrator.Option {
 		// 	},
 		// },
 	)
+}
+
+// registeredMigrationsCount returns the number of migrations actually registered in
+// migrations(). This is the single source of truth for "how many migration rows
+// admin.migration must contain after a full migrate"; no separate MigrationsCount
+// constant exists.
+func registeredMigrationsCount() int {
+	m, err := migrator.New(migrations())
+	if err != nil {
+		panic(fmt.Errorf("registeredMigrationsCount: %w", err))
+	}
+	return m.Count()
 }

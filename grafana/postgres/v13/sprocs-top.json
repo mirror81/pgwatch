@@ -137,7 +137,13 @@
                   ],
                   "show": false
                 },
-                "showHeader": true
+                "showHeader": true,
+                "sortBy": [
+                  {
+                    "displayName": "total_runtime",
+                    "desc": true
+                  }
+                ]
               },
               "fieldConfig": {
                 "defaults": {
@@ -223,7 +229,7 @@
                         "value": [
                           {
                             "targetBlank": true,
-                            "title": "Opens  'Sproc details' dashboard for that sproc",
+                            "title": "Opens 'Stored Procedure Details' dashboard for that sproc",
                             "url": "/d/sproc-details?var-dbname=$dbname&var-sproc_name=$__value&from=$__from&to=$__to"
                           }
                         ]
@@ -382,7 +388,13 @@
                   ],
                   "show": false
                 },
-                "showHeader": true
+                "showHeader": true,
+                "sortBy": [
+                  {
+                    "displayName": "avg_runtime",
+                    "desc": true
+                  }
+                ]
               },
               "fieldConfig": {
                 "defaults": {
@@ -468,7 +480,7 @@
                         "value": [
                           {
                             "targetBlank": true,
-                            "title": "Opens  'Sproc details' dashboard for that sproc",
+                            "title": "Opens 'Stored Procedure Details' dashboard for that sproc",
                             "url": "/d/sproc-details?var-dbname=$dbname&var-sproc_name=$__value&from=$__from&to=$__to"
                           }
                         ]
@@ -627,7 +639,13 @@
                   ],
                   "show": false
                 },
-                "showHeader": true
+                "showHeader": true,
+                "sortBy": [
+                  {
+                    "displayName": "calls",
+                    "desc": true
+                  }
+                ]
               },
               "fieldConfig": {
                 "defaults": {
@@ -709,7 +727,7 @@
                         "value": [
                           {
                             "targetBlank": true,
-                            "title": "Opens  'Sproc details' dashboard for that sproc",
+                            "title": "Opens 'Stored Procedure Details' dashboard for that sproc",
                             "url": "/d/sproc-details?var-dbname=$dbname&var-sproc_name=$__value&from=$__from&to=$__to"
                           }
                         ]
@@ -868,7 +886,13 @@
                   ],
                   "show": false
                 },
-                "showHeader": true
+                "showHeader": true,
+                "sortBy": [
+                  {
+                    "displayName": "total_runtime",
+                    "desc": true
+                  }
+                ]
               },
               "fieldConfig": {
                 "defaults": {
@@ -954,7 +978,7 @@
                         "value": [
                           {
                             "targetBlank": true,
-                            "title": "Opens  'Sproc details' dashboard for that sproc",
+                            "title": "Opens 'Stored Procedure Details' dashboard for that sproc",
                             "url": "/d/sproc-details?var-dbname=$dbname&var-sproc_name=$__value&from=$__from&to=$__to"
                           }
                         ]
@@ -1113,7 +1137,13 @@
                   ],
                   "show": false
                 },
-                "showHeader": true
+                "showHeader": true,
+                "sortBy": [
+                  {
+                    "displayName": "avg_runtime",
+                    "desc": true
+                  }
+                ]
               },
               "fieldConfig": {
                 "defaults": {
@@ -1199,7 +1229,7 @@
                         "value": [
                           {
                             "targetBlank": true,
-                            "title": "Opens  'Sproc details' dashboard for that sproc",
+                            "title": "Opens 'Stored Procedure Details' dashboard for that sproc",
                             "url": "/d/sproc-details?var-dbname=$dbname&var-sproc_name=$__value&from=$__from&to=$__to"
                           }
                         ]
@@ -1432,7 +1462,7 @@
       "hideTimepicker": false,
       "fiscalYearStartMonth": 0
     },
-    "title": "Top Sprocs",
+    "title": "Top Stored Procedures",
     "variables": [
       {
         "kind": "QueryVariable",

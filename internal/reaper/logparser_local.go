@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/cybertec-postgresql/pgwatch/v5/internal/log"
+	"github.com/cybertec-postgresql/pgwatch/v6/internal/log"
 )
 
 func (lp *LogParser) parseLogsLocal() error {
@@ -28,7 +28,7 @@ func (lp *LogParser) parseLogsLocal() error {
 			return nil
 		case <-time.After(currInterval):
 			if currInterval == 0 {
-				currInterval = time.Second * time.Duration(lp.Interval)
+				currInterval = lp.Interval
 			}
 		}
 
@@ -148,7 +148,7 @@ func (lp *LogParser) parseLogsLocal() error {
 					time.Sleep(time.Minute)
 					break
 				}
-			if lp.realDbname == databaseName {
+				if lp.realDbname == databaseName {
 					lp.eventCounts[errorSeverity]++
 				}
 				lp.eventCountsTotal[errorSeverity]++

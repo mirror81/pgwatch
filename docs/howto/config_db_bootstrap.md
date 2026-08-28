@@ -2,6 +2,8 @@
 title: Bootstrapping the Configuration Database
 ---
 
+For background on the two configuration store formats (Postgres database vs YAML files) and their trade-offs, see [Concept: Installation options](../concept/installation_options.md). For the full CLI flag and environment-variable reference, see [Reference: CLI & environment variables](../reference/cli_env.md).
+
 ## Choosing a Database
 
 pgwatch supports any database that supports the PostgreSQL wire protocol. This includes:
@@ -71,9 +73,9 @@ $ pgwatch --sources=postgresql://pgwatch:pgwatchadmin@localhost/pgwatch --sink=p
 !!! info
     Even though configuration database can hold both sources and metrics definitions,
     you are free to use any combination of configurations. For example, you can use a database
-    for metrics and YAML file for sources, or vice versa.
-
-That's it! You have successfully bootstrapped the configuration database for pgwatch.
+    for metrics and YAML file for sources, or vice versa. The only combination that is
+    rejected is two different Postgres connection strings for `--sources` and `--metrics`;
+    when both are Postgres URIs they must be identical.
 
 If now you want to see the tables created by pgwatch in the configuration database, you can connect to the database
 using the `psql` command-line tool and list the tables.
@@ -86,10 +88,10 @@ pgwatch=# \dt pgwatch.*
            List of relations
  Schema  |   Name    | Type  |  Owner
 ---------+-----------+-------+---------
- pgwatch | metric    | table | pgwatch
- pgwatch | migration | table | pgwatch
- pgwatch | preset    | table | pgwatch
- pgwatch | source    | table | pgwatch
+ pgwatch | metric    | table |  owner
+ pgwatch | migration | table |  owner
+ pgwatch | preset    | table |  owner
+ pgwatch | source    | table |  owner
 (4 rows)
 ```
 
